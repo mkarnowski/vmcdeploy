@@ -23,7 +23,9 @@ ENV EN_DOCKER=True
 RUN apt update && apt install -y python3-pip sshpass
 RUN pip3 install --no-cache-dir pip --upgrade
 RUN pip3 install --no-cache-dir requests pyyaml netaddr 
-
+RUN mkdir ~/.ssh
+RUN touch ~/.ssh/known_hosts
+RUN chmod 600 ~/.ssh/known_hosts
 
 # Copy files to directory
 COPY "vmc-deployment-container.py" "/usr/src/avideploy/vmc-deployment-container.py"

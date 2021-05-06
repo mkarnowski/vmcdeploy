@@ -16,6 +16,7 @@ import time
 from netaddr import IPNetwork
 import subprocess
 import copy
+import glob
 
 
 #------ setup logging
@@ -204,7 +205,7 @@ def import_configuration_yaml():
     if 'EN_CONFIGURATION' in os.environ:
         try:
             configuration = yaml.safe_load(os.environ['EN_CONFIGURATION'].replace('\t','  '))
-            print(configuration)
+            #print(configuration)
             #dir = '/var/avi/'
             #with open(fdir+os.environ['deployment'], 'r') as yaml_file:
             #    configuration = yaml.safe_load(yaml_file)
@@ -254,6 +255,12 @@ def set_configuration_defaults(configuration):
         configuration['se_disk_size_gb'] = '20'     
     if configuration.get('data_nic_parking_pg') == None:   
         configuration['data_nic_parking_pg'] = configuration['management_network_pg']
+    if configuration.get('three_node_cluster') == None:
+        configuration['three_node_cluster'] = False
+    if 'node1_mgmt_ip' in configuration:
+        os.chdir('/usr/src/avideploy/')
+        for ovafile in glob.glob('controller*.ova'):
+            configuration['ova_path'] = '/usr/src/avideploy/'+ovafile
     return configuration
 
 
@@ -681,8 +688,52 @@ def connect_disconnect_unused_vnics(configuration):
     
 
 
+def controller_check_config_requirements(configuration):
+    if configuration.get('vcenter_hostname') == None:
+        print(str(datetime.now())+'Configuration file missing required value: vcenter_hostname')
+        sys.exit()
+    elif configuration.get('vcenter_username') == None:
+        print(str(datetime.now())+'Configuration file missing required value: vcenter_username')
+        sys.exit()  
+    elif configuration.get('vcenter_password') == None:
+        print(str(datetime.now())+'Configuration file missing required value: vcenter_password')
+        sys.exit()        
+    elif configuration.get('management_network_pg') == None:
+        print(str(datetime.now())+'Configuration file missing required value: management_network_pg')
+        sys.exit()
+    elif configuration.get('avi_admin_password') == None:
+        print(str(datetime.now())+'Configuration file missing required value: avi_admin_password')
+        sys.exit()     
+    else:
+        return True             
 
 
+
+
+def se_check_config_requirements(configuration):
+    if configuration.get('vcenter_hostname') == None:
+        print(str(datetime.now())+'Configuration file missing required value: vcenter_hostname')
+        sys.exit()
+    elif configuration.get('vcenter_username') == None:
+        print(str(datetime.now())+'Configuration file missing required value: vcenter_username')
+        sys.exit()  
+    elif configuration.get('vcenter_password') == None:
+        print(str(datetime.now())+'Configuration file missing required value: vcenter_password')
+        sys.exit()        
+    elif configuration.get('avi_controller_ip') == None:
+        print(str(datetime.now())+'Configuration file missing required value: avi_controller_ip')
+        sys.exit()     
+    elif configuration.get('avi_username') == None:
+        print(str(datetime.now())+'Configuration file missing required value: avi_username')
+        sys.exit()     
+    elif configuration.get('avi_password') == None:
+        print(str(datetime.now())+'Configuration file missing required value: avi_password')
+        sys.exit()    
+    elif configuration.get('management_network_pg') == None:
+        print(str(datetime.now())+'Configuration file missing required value: management_network_pg')
+        sys.exit()
+    else:
+        return True      
 
 
 
@@ -697,6 +748,7 @@ if __name__ == '__main__':
     try:
         configuration = import_configuration_yaml()
         if 'node1_mgmt_ip' in configuration:
+            controller_check_config_requirements(configuration)
             generate_govc_variables(configuration)
             create_ssh_key()
             deploy_controller(configuration)
@@ -706,6 +758,7 @@ if __name__ == '__main__':
                 configure_cluster(configuration)
             generate_se_ova(configuration)
         elif 'se_mgmt_ip' in configuration:
+            se_check_config_requirements(configuration)
             generate_govc_variables(configuration)
             authenticate_to_avi(configuration)
             deploy_se(configuration)
