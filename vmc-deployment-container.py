@@ -1,6 +1,4 @@
-'''
---volume=[[YOUR-HOST-PATH]]/application.yml:/tmp/configuration.yml
-'''
+
 
 import requests
 import urllib3
