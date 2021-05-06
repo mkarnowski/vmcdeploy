@@ -453,17 +453,18 @@ def generate_se_ova(configuration):
     #    c_ip = configuration['cluster_vip']
     #else:
     #    c_ip = avi_controller
+    cluster_uuid = avi_request('cluster','admin').json()['uuid']
     resp = avi_post('fileservice/seova','admin', {'file_format': 'ova'})
     if resp.status_code == 201:
         print(str(datetime.now())+' Uploading SE to content library')
         se_path = '/host/pkgs/'+login.json()['version']['Tag']+'/se.ova'
         print(str(datetime.now())+' Download SE from controller')
-        os.system('sshpass -p '+configuration['avi_admin_password']+' scp -r admin@'+avi_controller+':'+se_path+' ./se-'+api_version+'.ova')
+        os.system('sshpass -p '+configuration['avi_admin_password']+' scp -r admin@'+avi_controller+':'+se_path+' ./se-'+cluster_uuid+'.ova')
         print(str(datetime.now())+' Uploading SE to content library')
-        os.popen(govc_vars+'./govc library.import  avi ./se-'+api_version+'.ova').read()
+        os.popen(govc_vars+'./govc library.import  avi ./se-'+cluster_uuid+'.ova').read()
         time.sleep(15)
         print(str(datetime.now())+' Cleaning up local se file: se.ova')
-        os.system('rm -f ./se-'+api_version+'.ova')
+        os.system('rm -f ./se-'+cluster_uuid+'.ova')
 
 
 
@@ -496,7 +497,7 @@ def check_for_se_ova(configuration):
     resp = os.popen(govc_vars+' ./govc library.ls /avi/*').read().split()
     if len(resp) > 0:
         for r in resp:
-            if r.split('/avi/',1)[1] == 'se-'+api_version:
+            if r.split('/avi/',1)[1] == 'se-'+cluster_uuid:
                 print(str(datetime.now())+' SE ova already exists in content library')
                 return True                    
     generate_se_ova(configuration)
@@ -581,7 +582,7 @@ def deploy_se(configuration):
       json.dump(se_spec, f)
     f.close()
     print(str(datetime.now())+' Deploying SE')
-    os.popen(govc_vars+'./govc library.deploy -folder='+configuration['folder'].rsplit('/',1)[1]+' -options=./properties.json /avi/se-'+api_version+' avise').read()
+    os.popen(govc_vars+'./govc library.deploy -folder='+configuration['folder'].rsplit('/',1)[1]+' -options=./properties.json /avi/se-'+cluster_uuid+' avise').read()
     if configuration['se_num_cpus'] != None:
         print(str(datetime.now())+' Setting se cpu')
         os.popen(govc_vars+'./govc vm.change -vm avise -c '+str(configuration['se_num_cpus']))
@@ -761,6 +762,7 @@ if __name__ == '__main__':
             se_check_config_requirements(configuration)
             generate_govc_variables(configuration)
             authenticate_to_avi(configuration)
+            cluster_uuid = avi_request('cluster','admin').json()['uuid']
             deploy_se(configuration)
             configure_se_data_segroup(configuration)
             connect_disconnect_unused_vnics(configuration)  
