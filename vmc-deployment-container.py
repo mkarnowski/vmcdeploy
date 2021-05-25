@@ -233,6 +233,8 @@ def set_configuration_defaults(configuration):
     else:
         if configuration['folder'].startswith('/') == False:
             configuration['folder'] = '/'+configuration['folder']
+    if configuration.get('resourcepool') == None:
+        configuration['resourcepool'] = 'Compute-ResourcePool'    
     if configuration.get('tenant') == None:
         configuration['tenant'] = 'admin'            
     if configuration.get('cloud') == None:
@@ -381,7 +383,7 @@ def deploy_controller(configuration):
           json.dump(controller_spec, f)
         f.close()
         print(str(datetime.now())+' Deploying controller'+str(controller_number))
-        os.popen(govc_vars+'./govc library.deploy -folder='+configuration['folder'].rsplit('/',1)[1]+' -options=./properties.json /avi/'+configuration['ova_path'].rsplit('/',1)[1].split('.ova')[0]+' controller'+str(controller_number)).read()
+        os.popen(govc_vars+'./govc library.deploy -folder='+configuration['folder'].rsplit('/',1)[1]+' -pool='+configuration['resourcepool']+' -options=./properties.json /avi/'+configuration['ova_path'].rsplit('/',1)[1].split('.ova')[0]+' controller'+str(controller_number)).read()
         if configuration['ctl_num_cpus'] != None:
             print(str(datetime.now())+' Setting controller'+str(controller_number)+' cpu')
             os.popen(govc_vars+'./govc vm.change -vm controller'+str(controller_number)+' -c '+configuration['ctl_num_cpus'])
@@ -580,7 +582,7 @@ def deploy_se(configuration):
       json.dump(se_spec, f)
     f.close()
     print(str(datetime.now())+' Deploying SE')
-    os.popen(govc_vars+'./govc library.deploy -folder='+configuration['folder'].rsplit('/',1)[1]+' -options=./properties.json /avi/se-'+cluster_uuid+' avise').read()
+    os.popen(govc_vars+'./govc library.deploy -folder='+configuration['folder'].rsplit('/',1)[1]+' -pool='+configuration['resourcepool']+' -options=./properties.json /avi/se-'+cluster_uuid+' avise').read()
     if configuration['se_num_cpus'] != None:
         print(str(datetime.now())+' Setting se cpu')
         os.popen(govc_vars+'./govc vm.change -vm avise -c '+str(configuration['se_num_cpus']))
