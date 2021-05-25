@@ -693,19 +693,19 @@ def connect_disconnect_unused_vnics(configuration):
 
 def controller_check_config_requirements(configuration):
     if configuration.get('vcenter_hostname') == None:
-        print(str(datetime.now())+'Configuration file missing required value: vcenter_hostname')
+        print(str(datetime.now())+' Configuration file missing required value: vcenter_hostname')
         sys.exit()
     elif configuration.get('vcenter_username') == None:
-        print(str(datetime.now())+'Configuration file missing required value: vcenter_username')
+        print(str(datetime.now())+' Configuration file missing required value: vcenter_username')
         sys.exit()  
     elif configuration.get('vcenter_password') == None:
-        print(str(datetime.now())+'Configuration file missing required value: vcenter_password')
+        print(str(datetime.now())+' Configuration file missing required value: vcenter_password')
         sys.exit()        
     elif configuration.get('management_network_pg') == None:
-        print(str(datetime.now())+'Configuration file missing required value: management_network_pg')
+        print(str(datetime.now())+' Configuration file missing required value: management_network_pg')
         sys.exit()
     elif configuration.get('avi_admin_password') == None:
-        print(str(datetime.now())+'Configuration file missing required value: avi_admin_password')
+        print(str(datetime.now())+' Configuration file missing required value: avi_admin_password')
         sys.exit()     
     else:
         return True             
@@ -715,25 +715,25 @@ def controller_check_config_requirements(configuration):
 
 def se_check_config_requirements(configuration):
     if configuration.get('vcenter_hostname') == None:
-        print(str(datetime.now())+'Configuration file missing required value: vcenter_hostname')
+        print(str(datetime.now())+' Configuration file missing required value: vcenter_hostname')
         sys.exit()
     elif configuration.get('vcenter_username') == None:
-        print(str(datetime.now())+'Configuration file missing required value: vcenter_username')
+        print(str(datetime.now())+' Configuration file missing required value: vcenter_username')
         sys.exit()  
     elif configuration.get('vcenter_password') == None:
-        print(str(datetime.now())+'Configuration file missing required value: vcenter_password')
+        print(str(datetime.now())+' Configuration file missing required value: vcenter_password')
         sys.exit()        
     elif configuration.get('avi_controller_ip') == None:
-        print(str(datetime.now())+'Configuration file missing required value: avi_controller_ip')
+        print(str(datetime.now())+' Configuration file missing required value: avi_controller_ip')
         sys.exit()     
     elif configuration.get('avi_username') == None:
-        print(str(datetime.now())+'Configuration file missing required value: avi_username')
+        print(str(datetime.now())+' Configuration file missing required value: avi_username')
         sys.exit()     
     elif configuration.get('avi_password') == None:
         print(str(datetime.now())+'Configuration file missing required value: avi_password')
         sys.exit()    
     elif configuration.get('management_network_pg') == None:
-        print(str(datetime.now())+'Configuration file missing required value: management_network_pg')
+        print(str(datetime.now())+' Configuration file missing required value: management_network_pg')
         sys.exit()
     else:
         return True      
@@ -767,6 +767,7 @@ if __name__ == '__main__':
                 generate_govc_variables(configuration)
                 authenticate_to_avi(configuration)
                 cluster_uuid = avi_request('cluster','admin').json()['uuid']
+                print(str(datetime.now())+' Deploying SE '+str(run_number+1)+'/'+str(configuration['number_to_deploy']))
                 deploy_se(configuration)
                 configure_se_data_segroup(configuration)
                 connect_disconnect_unused_vnics(configuration)
