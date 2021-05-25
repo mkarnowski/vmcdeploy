@@ -21,6 +21,7 @@ datacenter:
 cluster:
 datastore:
 folder:
+resourcepool:
 
 
 

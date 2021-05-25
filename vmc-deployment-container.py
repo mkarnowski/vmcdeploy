@@ -234,7 +234,7 @@ def set_configuration_defaults(configuration):
         if configuration['folder'].startswith('/') == False:
             configuration['folder'] = '/'+configuration['folder']
     if configuration.get('resourcepool') == None:
-        configuration['resourcepool'] = 'Compute-ResourcePool'    
+        configuration['resourcepool'] = ''    
     if configuration.get('tenant') == None:
         configuration['tenant'] = 'admin'            
     if configuration.get('cloud') == None:
@@ -257,6 +257,8 @@ def set_configuration_defaults(configuration):
         configuration['data_nic_parking_pg'] = configuration['management_network_pg']
     if configuration.get('three_node_cluster') == None:
         configuration['three_node_cluster'] = False
+    if configuration.get('number_to_deploy') == None:
+        configuration['number_to_deploy'] = 1        
     if 'node1_mgmt_ip' in configuration:
         os.chdir('/usr/src/avideploy/')
         for ovafile in glob.glob('controller*.ova'):
@@ -663,10 +665,10 @@ def configure_se_data_segroup(configuration):
     #----- Post config
     resp = avi_put('serviceengine/'+se['uuid'],configuration['tenant'],se)
     if resp.status_code == 200:
-        print(str(datetime.now())+' Configuring avise-'+se_ip+' data interfaces and segroup configured')
+        print(str(datetime.now())+' Configuring avise-'+se_ip+' data interfaces and segroup successful')
     else:
         print(str(datetime.now())+' Error configuring avise-'+se_ip+' data interfaces and segroup')
-        print(resp)
+        print(resp, resp.text)
     if configuration['segroup'] != 'Default-Group':
         time.sleep(15)
         print(str(datetime.now())+' Segroup for avise-'+se_ip+' changed')
@@ -759,13 +761,16 @@ if __name__ == '__main__':
                 configure_cluster(configuration)
             generate_se_ova(configuration)
         elif 'se_mgmt_ip' in configuration:
-            se_check_config_requirements(configuration)
-            generate_govc_variables(configuration)
-            authenticate_to_avi(configuration)
-            cluster_uuid = avi_request('cluster','admin').json()['uuid']
-            deploy_se(configuration)
-            configure_se_data_segroup(configuration)
-            connect_disconnect_unused_vnics(configuration)  
+            run_number = 0
+            while run_number < configuration['number_to_deploy']:
+                se_check_config_requirements(configuration)
+                generate_govc_variables(configuration)
+                authenticate_to_avi(configuration)
+                cluster_uuid = avi_request('cluster','admin').json()['uuid']
+                deploy_se(configuration)
+                configure_se_data_segroup(configuration)
+                connect_disconnect_unused_vnics(configuration)
+                run_number += 1
     except:
         exception_text = traceback.format_exc()
         print(str(datetime.now())+'  : '+exception_text)
