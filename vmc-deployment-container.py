@@ -432,6 +432,7 @@ def configure_controller_defaults_vmc(configuration):
     resp = avi_request('cloud?name='+configuration['cloud'], 'admin').json()['results'][0]
     cloud_uuid = resp['uuid']
     resp['vmc_deployment'] = True
+    resp['dhcp_enabled'] = True
     avi_put('cloud/'+cloud_uuid,'admin', resp)
 
 
@@ -758,6 +759,7 @@ if __name__ == '__main__':
             authenticate_to_avi(configuration)
             configure_controller_defaults_vmc(configuration)
             if configuration['three_node_cluster'] == True:
+                time.sleep(120)
                 configure_cluster(configuration)
             generate_se_ova(configuration)
         elif 'se_mgmt_ip' in configuration:
